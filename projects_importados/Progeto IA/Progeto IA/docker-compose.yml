@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  # O CÉREBRO: Banco de dados com suporte a Vetores (IA)
+  aurora-db:
+    image: ankane/pgvector:latest # PostgreSQL tunado para IA
+    container_name: aurora_brain_db
+    restart: always
+    environment:
+      POSTGRES_USER: diego_admin
+      POSTGRES_PASSWORD: aurora_password_123 # Altere depois!
+      POSTGRES_DB: aurora_permanent_memory
+    ports:
+      - "5432:5432"
+    volumes:
+      - aurora_db_data:/var/lib/postgresql/data
+
+  # A VELOCIDADE: Cache para estados imediatos da conversa
+  aurora-cache:
+    image: redis:alpine
+    container_name: aurora_fast_memory
+    restart: always
+    ports:
+      - "6379:6379"
+
+  # O MENSAGEIRO: Gerencia tarefas assíncronas (Pentest scans, RAG, etc)
+  aurora-broker:
+    image: rabbitmq:3-management-alpine
+    container_name: aurora_task_broker
+    restart: always
+    ports:
+      - "5672:5672"   # Porta do serviço
+      - "15672:15672" # Painel de controle Web (Username/Pass: guest)
+
+volumes:
+  aurora_db_data:

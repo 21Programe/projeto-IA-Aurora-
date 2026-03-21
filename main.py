@@ -1,89 +1,95 @@
-import threading
-import uvicorn
 import os
 import sys
-import traceback
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+import threading
+import time
 
-# Garante que a raiz do Projeto IA seja a prioridade zero
+# 1. Garante que a raiz do Projeto IA seja a prioridade zero ANTES de importar módulos locais
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
-# ==========================================
-# 🕵️ DIAGNÓSTICO DE ARQUIVOS (VERIFICAÇÃO)
-# ==========================================
-builder_file = os.path.join(BASE_DIR, "api", "builder_routes.py")
-if not os.path.exists(builder_file):
-    print("\n" + "!"*60)
-    print("🚨 ALERTA: ARQUIVO DESAPARECIDO 🚨")
-    print(f"O sistema não encontrou o ficheiro onde devia estar:\n-> {builder_file}")
-    print("\nComo resolver:")
-    print("Verifique se o ficheiro 'builder_routes.py' está fisicamente")
-    print("dentro da pasta 'api' na raiz do seu projeto. Ele pode ter")
-    print("ficado esquecido dentro da pasta 'src/api' antiga!")
-    print("!"*60 + "\n")
-
-# Importações Originais da Aurora
+# 2. Importações Originais da Aurora
 from config.settings import bootstrap_directories
 from memory.sqlite_store import init_db
-from llm.local_llm import iniciar_llm, LocalLLM 
+from llm.local_llm import iniciar_llm, LocalLLM
 from ui.gui import AuroraGUI
 from agents.tactical_agent import AuroraTacticalAgent
 
-# Importação do Módulo Builder com Revelador de Erros
-try:
-    from api.builder_routes import router as builder_router
-except Exception as e:
-    print("\n" + "="*60)
-    print("[ERRO REVELADO] O motivo exato da falha na importação:")
-    traceback.print_exc()
-    print("="*60 + "\n")
-    builder_router = None
+# 3. Importações do Novo Módulo de Segurança
+from seguranca.visao_protetora import rotina_visao_protetora
+from seguranca.cao_de_guarda import rotina_de_seguranca_invisivel
+from seguranca.barramento_eventos import fila_alertas
+from seguranca.defesa_ativa import iniciar_defesa
+from seguranca.mensageiro_telegram import enviar_alerta_telegram
+from seguranca.quarentena_edge import rotina_quarentena_web # NOVO: Importação da Quarentena
 
 # Injeção de Ambiente CUDA
-cuda_path = r'C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4\bin' 
+cuda_path = r'C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4\bin'
 if os.path.exists(cuda_path):
     os.environ["PATH"] = cuda_path + os.pathsep + os.environ["PATH"]
     print(f"[SYSTEM] Matriz CUDA injetada: {cuda_path}")
 
-def start_builder_server():
-    if builder_router is None:
-        print("[AVISO] Servidor Builder desativado devido a erro (veja o log acima).")
-        return
-
-    app = FastAPI(title="Aurora Builder Engine")
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-    app.include_router(builder_router)
-    
-    print("[SYSTEM] Motor de Construção (Porta 8000) - Online")
-    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="error")
+def central_de_controle_seguranca():
+    """Esta função lê os alertas do Cão de Guarda na velocidade da luz"""
+    while True:
+        alerta = fila_alertas.get() 
+        
+        print(f"\n[A U R O R A  C E N T R A L] 🚨 AMEAÇA RECEBIDA DA FILA!")
+        print(f"-> Ameaça: {alerta['mensagem']}")
+        
+        # 1. Dispara o alerta blindado para o seu Telegram!
+        enviar_alerta_telegram(alerta)
+        
+        # 2. Inicia a interface nativa do Windows para o Contra-Ataque/Defesa!
+        iniciar_defesa(alerta)
+        
+        fila_alertas.task_done()
 
 def boot_sequence():
-    threading.Thread(target=start_builder_server, daemon=True).start()
-
     print("[SYSTEM] Iniciando Check de Diretórios...")
     bootstrap_directories()
     init_db()
     iniciar_llm()
-    
+
     llm_core = LocalLLM()
     app = AuroraGUI()
-    
+
     aurora_engine = AuroraTacticalAgent(
-        llm_func=llm_core, 
+        llm_func=llm_core,
         orchestrator=app.orchestrator
     )
-    
+
     app.agent = aurora_engine
     print("[SYSTEM] Aurora V2.5 Totalmente Operacional.")
-    app.mainloop() 
+
+    # --- INÍCIO DA ARQUITETURA DE SEGURANÇA ---
+    
+    # 1. Liga o Cão de Guarda (Vigia o Windows silenciosamente)
+    thread_antivirus = threading.Thread(target=rotina_de_seguranca_invisivel)
+    thread_antivirus.daemon = True 
+    thread_antivirus.start()
+
+    # 2. Liga a Recepção (Lê a Fila e dispara a janela de Defesa)
+    thread_recepcao = threading.Thread(target=central_de_controle_seguranca)
+    thread_recepcao.daemon = True
+    thread_recepcao.start()
+    
+    # 3. Liga a Visão Computacional (Os Olhos da Aurora)
+    thread_visao = threading.Thread(target=rotina_visao_protetora)
+    thread_visao.daemon = True
+    thread_visao.start()
+    print("🔥 [SYSTEM] Sensores Visuais Online!")
+    
+    # 4. Liga a Quarentena de Downloads do Edge (NOVO)
+    thread_quarentena = threading.Thread(target=rotina_quarentena_web)
+    thread_quarentena.daemon = True
+    thread_quarentena.start()
+    
+    print("🔥 [SYSTEM] Sistema Nervoso de Segurança Online e Operante!")
+    # --- FIM DA ARQUITETURA DE SEGURANÇA ---
+
+    # Inicia a interface gráfica da Aurora
+    app.mainloop()
 
 if __name__ == "__main__":
     boot_sequence()

@@ -8,3 +8,25 @@ __pycache__/
 
 # Ignorar pastas de projetos que a Aurora criar
 aurora_projects/
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Modelos Pesados (Não subir pro Git!)
+*.gguf
+*.bin
+
+# Dados da Aurora e Segurança
+seguranca/logs/
+seguranca/prisao_quarentena/
+knowledge/livros/
+*.faiss
+*.pkl
+*.jsonl
+
+# Configurações de IDE
+.vscode/
+.idea/

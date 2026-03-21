@@ -1,0 +1,10 @@
+# Ignora a pasta com os modelos pesados (os motores)
+modelos/
+*.gguf
+
+# Ignora configurações locais e senhas
+.env
+__pycache__/
+
+# Ignorar pastas de projetos que a Aurora criar
+aurora_projects/
