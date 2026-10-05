@@ -9,10 +9,8 @@ from memory.rag_engine import gerenciador_rag
 # IMPORTAÇÃO DA FERRAMENTA DE RED TEAM
 from tools.github_ingestor import extrair_repositorio
 
-# --- INJEÇÃO DE CAMINHO CUDA (Para sua RTX 2060) ---
-cuda_bin = r'C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4\bin'
-if os.path.exists(cuda_bin):
-    os.environ["PATH"] = cuda_bin + os.pathsep + os.environ["PATH"]
+# CUDA é opcional. O ambiente local pode configurar seus próprios binários.
+# O código não depende de um caminho absoluto de uma máquina específica.
 
 cerebro_llm = None
 modelo_carregado = False
