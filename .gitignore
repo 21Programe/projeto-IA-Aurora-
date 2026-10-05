@@ -23,6 +23,7 @@ data/*
 # Logs, caches e mídia temporária
 *.log
 *.wav
+*.mp3
 *.tmp
 *.cache
 
