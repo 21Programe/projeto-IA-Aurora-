@@ -4,7 +4,7 @@ from collections import defaultdict, deque
 from urllib.parse import urlparse
 from mitmproxy import http
 
-from barramento_eventos import fila_alertas
+from seguranca.barramento_eventos import fila_alertas
 
 # ==============================
 # CONFIGURAÇÃO DEFENSIVA

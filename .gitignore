@@ -1,32 +1,47 @@
-# Ignora a pasta com os modelos pesados (os motores)
-modelos/
-*.gguf
-
-# Ignora configurações locais e senhas
-.env
-__pycache__/
-
-# Ignorar pastas de projetos que a Aurora criar
-aurora_projects/
 # Python
 __pycache__/
 *.py[cod]
 *$py.class
+.venv/
 venv/
 .env
 
-# Modelos Pesados (Não subir pro Git!)
+# Modelos locais / artefatos pesados
 *.gguf
 *.bin
+modelos/
 
-# Dados da Aurora e Segurança
-seguranca/logs/
-seguranca/prisao_quarentena/
-knowledge/livros/
+# Bancos e dados gerados localmente
+*.db
+*.sqlite
+*.sqlite3
 *.faiss
 *.pkl
 *.jsonl
+data/*
 
-# Configurações de IDE
+# Logs, caches e mídia temporária
+*.log
+*.wav
+*.mp3
+*.tmp
+*.cache
+
+# Capturas e artefatos de laboratório
+*.cap
+*.netxml
+*.kismet.csv
+
+# Conhecimento/importações locais
+knowledge/livros/
+projects_importados/
+
+# Quarentena e logs de segurança
+seguranca/logs/
+seguranca/prisao_quarentena/
+aurora_projects/
+
+# IDE
 .vscode/
 .idea/
+*.code-workspace

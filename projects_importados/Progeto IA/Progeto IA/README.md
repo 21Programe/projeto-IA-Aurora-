@@ -1,1 +1,0 @@
-# projeto-IA-Aurora-

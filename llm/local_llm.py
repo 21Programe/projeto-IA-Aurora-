@@ -9,10 +9,8 @@ from memory.rag_engine import gerenciador_rag
 # IMPORTAÇÃO DA FERRAMENTA DE RED TEAM
 from tools.github_ingestor import extrair_repositorio
 
-# --- INJEÇÃO DE CAMINHO CUDA (Para sua RTX 2060) ---
-cuda_bin = r'C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4\bin'
-if os.path.exists(cuda_bin):
-    os.environ["PATH"] = cuda_bin + os.pathsep + os.environ["PATH"]
+# CUDA é opcional. O ambiente local pode configurar seus próprios binários.
+# O código não depende de um caminho absoluto de uma máquina específica.
 
 cerebro_llm = None
 modelo_carregado = False
@@ -63,12 +61,14 @@ class LocalLLM:
                     link = partes[1]
                     print("[SISTEMA] Interceptando comando tático. Acionando Git...")
                     resultado_git = extrair_repositorio(link)
-                    
-                    # Se o download foi bem-sucedido ou já existia, injeta no cérebro!
-                    nome_repo = link.split("/")[-1].replace(".git", "")
-                    caminho_baixado = os.path.join(os.getcwd(), "projects_importados", nome_repo)
-                    
-                    if os.path.exists(caminho_baixado):
+
+                    # Se a importação foi bem-sucedida, usa o caminho devolvido pelo ingestor.
+                    caminho_baixado = (
+                        resultado_git if isinstance(resultado_git, str) and os.path.isdir(resultado_git)
+                        else None
+                    )
+
+                    if caminho_baixado:
                         # CHAMA A NOSSA NOVA FUNÇÃO DO RAG!
                         chunks, msg = gerenciador_rag.ingerir_diretorio_codigo(caminho_baixado)
                         return f"[OPERAÇÃO CONCLUÍDA] Repositório clonado. {msg}"
