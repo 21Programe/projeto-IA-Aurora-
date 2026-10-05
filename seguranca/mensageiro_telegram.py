@@ -1,33 +1,39 @@
-import requests
+import os
 import threading
 
-# --- CONFIGURAÇÕES DO TELEGRAM ---
-TOKEN = "7625411545:AAHjmJ7yEfa5b5baXxc0fQ6ceUcFQnK_2eE"
-CHAT_ID = "7125751042"
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()
+
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "").strip()
+
 
 def disparar_api_telegram(texto):
-    """Envia o alerta para o Telegram via API Oficial em segundo plano."""
+    """Envia um alerta para o Telegram usando credenciais do ambiente."""
+    if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
+        print("[MENSAGEIRO] Telegram desativado: credenciais não configuradas.")
+        return
+
     try:
-        url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
+        url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
         payload = {
-            "chat_id": CHAT_ID,
+            "chat_id": TELEGRAM_CHAT_ID,
             "text": texto,
-            "parse_mode": "Markdown" # Permite usar negrito e formatação legal
+            "parse_mode": "Markdown",
         }
-        
         resposta = requests.post(url, json=payload, timeout=10)
-        
         if resposta.status_code == 200:
-            print("\n[MENSAGEIRO] ✈️ Alerta TELEGRAM disparado com sucesso para o comandante!")
+            print("[MENSAGEIRO] Alerta Telegram enviado.")
         else:
-            print(f"\n[MENSAGEIRO] ⚠️ Falha ao enviar Telegram. Erro: {resposta.text}")
-    except Exception as e:
-        print(f"\n[MENSAGEIRO] ❌ Erro de conexão com Telegram: {e}")
+            print(f"[MENSAGEIRO] Falha no Telegram: HTTP {resposta.status_code}")
+    except requests.RequestException as exc:
+        print(f"[MENSAGEIRO] Erro de conexão com Telegram: {exc}")
+
 
 def enviar_alerta_telegram(alerta):
-    """Monta o pacote de dados à prova de falhas usando o método .get()"""
-    
-    # Se o alerta for do módulo de Quarentena, a mensagem é diferente
+    """Formata o alerta e envia em segundo plano."""
     if alerta.get("tipo") == "ALERTA_QUARENTENA":
         texto = (
             f"🚨 *AURORA EDR - QUARENTENA {alerta.get('nivel', 'ALTO')}* 🚨\n\n"
@@ -40,7 +46,6 @@ def enviar_alerta_telegram(alerta):
             f"Aguardando ordens no monitor principal."
         )
     else:
-        # Padrão original para os outros alertas (Rede/Processo/Visão)
         texto = (
             f"🚨 *AURORA EDR - ALERTA {alerta.get('nivel', 'CRÍTICO')}* 🚨\n\n"
             f"Comandante, interceptei uma ameaça!\n\n"
@@ -52,8 +57,9 @@ def enviar_alerta_telegram(alerta):
             f"📂 *Path:* `{alerta.get('executavel', 'N/A')}`\n\n"
             f"Aguardando ordens."
         )
-    
-    thread_msg = threading.Thread(target=disparar_api_telegram, args=(texto,))
-    thread_msg.start()
-    
-    
+
+    threading.Thread(
+        target=disparar_api_telegram,
+        args=(texto,),
+        daemon=True,
+    ).start()
