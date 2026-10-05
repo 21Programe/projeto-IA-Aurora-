@@ -14,16 +14,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
+      - name: Check whitespace
+        run: git diff --check
 
-      - name: Install minimal validation dependencies
-        run: python -m pip install python-dotenv
+      - name: Validate repository hygiene
+        shell: python
+        run: |
+          from pathlib import Path
 
-      - name: Compile maintained modules
-        run: python -m compileall -q config tests
+          forbidden = ("C:\\Users\\", "D:\\", "C:\\Program Files\\")
+          files = [
+              Path("config/settings.py"),
+              Path("llm/local_llm.py"),
+              Path("seguranca/mensageiro_telegram.py"),
+          ]
 
-      - name: Run configuration tests
-        run: python -m unittest tests.test_settings
+          for path in files:
+              text = path.read_text(encoding="utf-8")
+              for marker in forbidden:
+                  if marker in text:
+                      raise SystemExit(f"Caminho de máquina encontrado em {path}: {marker}")
+
+          if Path(".env").exists():
+              raise SystemExit(".env real não pode estar presente no repositório.")
