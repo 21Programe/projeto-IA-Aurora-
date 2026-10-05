@@ -1,0 +1,26 @@
+name: Aurora CI
+
+on:
+  push:
+    branches: ["main", "portfolio-cleanup"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  validation:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Compile Python modules
+        run: python -m compileall -q .
+
+      - name: Validate configuration module
+        run: python -c "from config import settings; settings.bootstrap_directories()"
