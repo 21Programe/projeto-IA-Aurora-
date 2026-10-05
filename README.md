@@ -107,9 +107,13 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-Depois, configure o modelo local conforme a documentação de cada módulo.
+Depois, copie o template de ambiente e ajuste somente os valores locais:
 
-> O código atual possui algumas configurações específicas do ambiente de desenvolvimento. Uma das metas da v1.0 é remover caminhos absolutos e centralizar toda configuração em variáveis de ambiente/arquivos de configuração.
+```powershell
+Copy-Item .env.example .env
+```
+
+Edite `.env` para apontar para os modelos GGUF e, opcionalmente, configurar alertas Telegram. **Nunca publique o arquivo `.env` nem credenciais reais no Git.**
 
 ## 📌 Estado do projeto
 
@@ -117,8 +121,8 @@ Depois, configure o modelo local conforme a documentação de cada módulo.
 
 ### Próximos marcos
 
-- [ ] eliminar caminhos absolutos do ambiente local;
-- [ ] centralizar configurações;
+- [x] eliminar caminhos absolutos do ambiente local;
+- [x] centralizar configurações principais;
 - [ ] melhorar instalação do projeto;
 - [ ] ampliar testes;
 - [ ] adicionar demonstração visual;
